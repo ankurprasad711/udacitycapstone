@@ -17,8 +17,11 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            make install
-      
+            apt-get update
+            apt-get install wget -y
+            # Install hadolint
+            wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 && chmod +x /bin/hadolint
+            apt-get install tidy -y
       - run:
           name: Lint index.html
           command: |
@@ -27,7 +30,7 @@ jobs:
       # run lint!
       - run:
           name: run lint
-          command: make lint
+          command: hadolint --ignore DL3006 Dockerfile
 
 workflows:
   default:
