@@ -32,7 +32,65 @@ jobs:
           name: run lint
           command: hadolint --ignore DL3006 Dockerfile
 
+  build_docker_image:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Build Docker image
+          command: |
+            docker build -t ankurprasad711/myfirstapp:${env.BUILD_NUMBER} .
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            docker push ankurprasad711/myfirstapp:${env.BUILD_NUMBER}
+
+
+  add_kubectl:
+    docker:
+    - image: amazon/aws-cli
+    steps:
+      - checkout
+      - kubernetes/install-kubectl
+      - run:
+          name: Update Kubeconfiguration eks
+          command: aws eks --region us-west-2 update-kubeconfig --name capstone
+      - run:
+          name: blue service 
+          command: |
+            kubectl apply -f ./files/blue.json        
+      - run:
+          name: green Service 
+          command: |       
+            kubectl apply -f ./files/green.json
+      - run:
+          name: Redirect to Blue 
+          command: |       
+            kubectl apply -f ./files/Blue-Service.json
+  
+  approval_and_apply_green:
+    docker:
+    - image: amazon/aws-cli
+    steps:
+      - checkout
+      - kubernetes/install-kubectl
+      - run:
+          name: Update Kubeconfiguration eks
+          command: aws eks --region us-west-2 update-kubeconfig --name capstone
+
+      - run:
+          name: Redirect to Green
+          command: |
+            kubectl apply -f ./files/Green-Service.json
+
 workflows:
   default:
     jobs:
       - lint
+      - build_docker_image:
+          requires: [lint]
+      - add_kubectl:
+          requires: [build_docker_image]
+      - green_approval:
+          type: approval
+          requires: [add_kubectl]
+      - approval_and_apply_green:
+          requires: [green_approval]
