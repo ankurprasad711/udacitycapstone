@@ -39,9 +39,9 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            docker build -t ankurprasad711/myfirstapp:${env.BUILD_NUMBER} .
+            docker build -t ankurprasad711/myfirstapp .
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker push ankurprasad711/myfirstapp:${env.BUILD_NUMBER}
+            docker push ankurprasad711/myfirstapp
 
 
   add_kubectl:
