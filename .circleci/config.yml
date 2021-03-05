@@ -54,17 +54,11 @@ jobs:
           name: Update Kubeconfiguration eks
           command: aws eks --region us-west-2 update-kubeconfig --name capstone
       - run:
-          name: blue service 
-          command: |
-            kubectl apply -f ./files/blue.json        
+          name: blue update 
+          command: kubectl apply -f ./files/blue.json
       - run:
-          name: green Service 
-          command: |       
-            kubectl apply -f ./files/green.json
-      - run:
-          name: Redirect to Blue 
-          command: |       
-            kubectl apply -f ./files/Blue-Service.json
+          name: apply blue redirect 
+          command: kubectl apply -f ./files/blue-green-service.json
   
   approval_and_apply_green:
     docker:
@@ -77,9 +71,11 @@ jobs:
           command: aws eks --region us-west-2 update-kubeconfig --name capstone
 
       - run:
+          name: green update 
+          command: kubectl apply -f ./files/green.json
+      - run:
           name: Redirect to Green
-          command: |
-            kubectl apply -f ./files/Green-Service.json
+          command: kubectl apply -f ./files/green-blue-service.json
 
 workflows:
   default:

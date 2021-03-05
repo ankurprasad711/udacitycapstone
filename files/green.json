@@ -2,26 +2,26 @@
     "kind": "ReplicationController",
     "apiVersion": "v1",
     "metadata": {
-      "name": "green",
+      "name": "green-seervice",
       "labels": {
-        "app": "green"
+        "app": "green-seervice"
       }
     },
     "spec": {
       "replicas": 1,
       "selector": {
-        "app": "green"
+        "app": "green-seervice"
       },
       "template": {
         "metadata": {
           "labels": {
-            "app": "green"
+            "app": "green-seervice"
           }
         },
         "spec": {
           "containers": [
             {
-              "name": "green",
+              "name": "green-seervice",
               "image": "ankurprasad711/myfirstapp:latest",
               "ports": [
                 {

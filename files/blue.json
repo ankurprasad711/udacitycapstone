@@ -2,26 +2,26 @@
     "kind": "ReplicationController",
     "apiVersion": "v1",
     "metadata": {
-      "name": "blue",
+      "name": "blue-service",
       "labels": {
-        "app": "blue"
+        "app": "blue-service"
       }
     },
     "spec": {
       "replicas": 1,
       "selector": {
-        "app": "blue"
+        "app": "blue-service"
       },
       "template": {
         "metadata": {
           "labels": {
-            "app": "blue"
+            "app": "blue-service"
           }
         },
         "spec": {
           "containers": [
             {
-              "name": "blue",
+              "name": "blue-service",
               "image": "ankurprasad711/myfirstapp:latest",
               "ports": [
                 {
