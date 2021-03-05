@@ -1,0 +1,98 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      # Use the same Docker base as the project
+      - image: python:3.7.3-stretch
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements.txt" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            make install
+            # Install hadolint
+            wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 &&\
+            chmod +x /bin/hadolint
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+      
+      - run:
+          name: Lint HTML
+          command: |
+            tidy -q -e *.html
+
+      # run lint!
+      - run:
+          name: run lint
+          command: |
+            . venv/bin/activate 
+            make lint 
+
+  build_docker_image:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker image
+          command: |
+            docker build -t ankurprasad711/myfirstapp:${env.BUILD_NUMBER} .
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            docker push ankurprasad711/myfirstapp:${env.BUILD_NUMBER}
+
+
+  Kubectl_Apply:
+    docker:
+    - image: amazon/aws-cli
+    steps:
+      - checkout
+      - kubernetes/install-kubectl
+      - run:
+          name: Update Kubeconfiguration eks
+          command: aws eks --region us-west-2 update-kubeconfig --name capstone
+      - run:
+          name: blue service 
+          command: |
+            kubectl apply -f ./Blue.json        
+      - run:
+          name: green Service 
+          command: |       
+            kubectl apply -f ./Green.json
+      - run:
+          name: Redirect to Blue 
+          command: |       
+            kubectl apply -f ./Blue-Service.json
+  Apply_Green:
+    docker:
+    - image: amazon/aws-cli
+    steps:
+      - checkout
+      - kubernetes/install-kubectl
+      - run:
+          name: Update Kubeconfig
+          command: |
+            ./update_kubeconfig.sh
+      - run:
+          name: Redirect to Green
+          command: |
+            kubectl apply -f ./Green-Service.json
