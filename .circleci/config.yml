@@ -1,8 +1,9 @@
-# Python CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-python/ for more details
-#
-version: 2
+version: 2.1
+
+orbs:
+  aws-eks: circleci/aws-eks@1.0.3
+  kubernetes: circleci/kubernetes@0.11.2
+
 jobs:
   lint:
     docker:
@@ -27,3 +28,8 @@ jobs:
       - run:
           name: run lint
           command: make lint
+
+workflows:
+  default:
+    jobs:
+      - lint
