@@ -22,7 +22,7 @@
           "containers": [
             {
               "name": "green",
-              "image": "ankurprasad711/myfirstapp:latest",
+              "image": "ankurprasad711/myfirstapp:${env.BUILD_NUMBER}:latest",
               "ports": [
                 {
                   "name": "server-green",
